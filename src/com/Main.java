@@ -12,6 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 public class Main {
     public static void main(String[] args) throws IOException
     {
+        long begintime = System.nanoTime();
     	Check chk = new Check();
         //Parameters Check
         if (args.length < 2) chk.usageErr();
@@ -36,8 +37,13 @@ public class Main {
         else if (args.length == 4) TableName = args[3];
          //When there is only two parameters, TableName is FileName
         else TableName = chk.NetFileName(FileName);
-        System.out.println(FileName);
         //Declare File and open xlsx file
+        
+        // Print out Database and File name
+        System.out.println("Database name: " + DBName+"\t File Name: "+ FileName);
+       // Print out Sheet and table name
+        System.out.println("Sheet name: "+SheetName+"\tTable name: " + TableName);
+        
         File OpenFile = new File(FileName);
         FileInputStream FileInput = new FileInputStream(OpenFile);
         XSSFWorkbook WorkBook = new XSSFWorkbook(FileInput);
@@ -94,6 +100,9 @@ public class Main {
             }
             TypeOfData.add(ColumnType);
         }
+       
+        // Print out line numbers
+        System.out.println("Inserting... Please be patient =)");
         // Insert xlsx file into table
         dbedit.createTable(ContentOfXlsx, TypeOfData, DBName, TableName);
         dbedit.insertTable(ContentOfXlsx, TypeOfData, DBName, TableName);
@@ -102,5 +111,8 @@ public class Main {
         // Close files
         WorkBook.close();
         FileInput.close();
+        long endtime = System.nanoTime();
+        long costTime = (endtime - begintime)/1000000000;
+        System.out.println("Time Consumed :"+costTime+" Seconds");
     }
 }

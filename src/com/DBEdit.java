@@ -23,10 +23,6 @@ class DBEdit {
     //Show Table Schema
     void showSchema(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String TableName) 
     {
-        // Print out table name
-        System.out.println("TableName name: " + TableName);
-        // Print out line numbers
-        System.out.println("Number of lines: " + (ContentOfXlsx.size() - 2));
         System.out.printf("%-12s\t%-12s", "Field", "Type");
         System.out.println();
 
@@ -59,13 +55,16 @@ class DBEdit {
         }
         CreateTable.append(");");
         String SQLCreateTable = CreateTable.toString();
+//        System.out.println("Drop : "+DropTableIfExist);
+//        System.out.println("Create : "+SQLCreateTable);
         RunQuery(DBName,DropTableIfExist);
         RunQuery(DBName,SQLCreateTable);
     }
 
     void insertTable(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String DBName, String TableName) 
     {
-        for (int i = 1; i < ContentOfXlsx.size(); i++) 
+    	boolean IsLastLineEmpty = false;
+        empty:for (int i = 1; i < ContentOfXlsx.size(); i++) 
         {
         	StringBuilder InsertTable = new StringBuilder();
             ArrayList<String> strings = ContentOfXlsx.get(i);
@@ -96,6 +95,11 @@ class DBEdit {
                 if (!TypeOfData.get(j).equals("int") && !(TypeOfData.get(j).equals("real"))) 
                 {
                     // char
+                	if(string == "") 
+                	{
+                		IsLastLineEmpty = true ; 
+                		break empty; // Skip this row's content
+                	}
                     temp.append("'");
                     temp.append(string);
                     temp.append("'");
@@ -111,7 +115,10 @@ class DBEdit {
             temp.append(");");
             InsertTable.append(temp);
             String SQLInsertTable = InsertTable.toString();
+//            System.out.println("Insert : "+SQLInsertTable);
             RunQuery(DBName,SQLInsertTable);
         }
+    	if(IsLastLineEmpty == true) System.out.println("Number of lines: " + (ContentOfXlsx.size() - 2));
+    	else System.out.println("Number of lines: " + (ContentOfXlsx.size() - 1));
     }
 }
