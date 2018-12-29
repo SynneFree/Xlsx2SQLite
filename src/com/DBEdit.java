@@ -3,14 +3,30 @@ import java.sql.*;
 import java.util.ArrayList;
 
 class DBEdit {
-    void showTable(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String TableName) 
+    //Execute SQLite Query
+    void RunQuery(String DBName, String Statement){
+        String DBPath = "jdbc:sqlite:" + DBName;
+        Connection conn = null;
+        try
+        {
+            conn = DriverManager.getConnection(DBPath);
+            Statement Query = conn.createStatement();
+            Query.execute(Statement);
+            conn.close();
+        }
+        catch (SQLException e) 
+        {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    //Show Table Schema
+    void showSchema(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String TableName) 
     {
         // Print out table name
         System.out.println("TableName name: " + TableName);
         // Print out line numbers
-        System.out.println("Number of lines: " + (ContentOfXlsx.size() - 1));
-
-        System.out.println();
+        System.out.println("Number of lines: " + (ContentOfXlsx.size() - 2));
         System.out.printf("%-12s\t%-12s", "Field", "Type");
         System.out.println();
 
@@ -23,38 +39,43 @@ class DBEdit {
             System.out.println();
         }
     }
-
-    void insertTable(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String dbName, String TableName) 
+    void createTable(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String DBName, String TableName)
     {
         // Delete table if exists
-        String deletesql = "DROP TABLE IF EXISTS " + TableName + ";";
+        String DropTableIfExist = "DROP TABLE IF EXISTS " + TableName + ";";
 
         // Create new table
-        StringBuilder tableBuilder = new StringBuilder("CREATE TABLE IF NOT EXISTS " + TableName + "(\n");
-        tableBuilder.append("id integer primary key,\n");
+        StringBuilder CreateTable = new StringBuilder("CREATE TABLE IF NOT EXISTS " + TableName + "(\n");
+        CreateTable.append("NoOfLines int primary key,\n");
 
-        for (int j = 0; j < TypeOfData.size(); j++) 
+        for (int i = 0; i < TypeOfData.size(); i++) 
         {
-            String temp = ContentOfXlsx.get(0).get(j) + " " + TypeOfData.get(j);
-            if (j == TypeOfData.size() - 1)
+            String temp = ContentOfXlsx.get(0).get(i) + " " + TypeOfData.get(i);
+            if (i == TypeOfData.size() - 1)
                 temp += "\n";
             else
                 temp += ",\n";
-            tableBuilder.append(temp);
+            CreateTable.append(temp);
         }
-        tableBuilder.append(");");
+        CreateTable.append(");");
+        String SQLCreateTable = CreateTable.toString();
+        RunQuery(DBName,DropTableIfExist);
+        RunQuery(DBName,SQLCreateTable);
+    }
 
-        StringBuilder tableInserter = new StringBuilder();
-
+    void insertTable(ArrayList<ArrayList<String>> ContentOfXlsx, ArrayList<String> TypeOfData, String DBName, String TableName) 
+    {
         for (int i = 1; i < ContentOfXlsx.size(); i++) 
         {
+        	StringBuilder InsertTable = new StringBuilder();
             ArrayList<String> strings = ContentOfXlsx.get(i);
             StringBuilder temp = new StringBuilder("INSERT INTO ");
             temp.append(TableName);
-
-            // Entry name
+            //Start Bracket for columns 
             temp.append(" (");
 
+            //Append Columns Names to the query
+            temp.append("NoOfLines, ");
             ArrayList<String> names = ContentOfXlsx.get(0);
             for (int j = 0; j < names.size(); j++) 
             {
@@ -63,13 +84,15 @@ class DBEdit {
                     temp.append(", ");
             }
 
+            //End Bracket for colums
             temp.append(")");
             temp.append(" VALUES (");
-
+            //No of Lines
+            temp.append(i);
+            temp.append(", ");
             for (int j = 0; j < strings.size(); j++) 
             {
                 String string = strings.get(j);
-
                 if (!TypeOfData.get(j).equals("int") && !(TypeOfData.get(j).equals("real"))) 
                 {
                     // char
@@ -85,27 +108,10 @@ class DBEdit {
                 if (j != strings.size() - 1)
                     temp.append(", ");
             }
-            temp.append(");\n");
-            tableInserter.append(temp);
-        }
-        String createsql = tableBuilder.toString();
-        String insertsql = tableInserter.toString();
-//        System.out.println(createsql);
-//        System.out.println(insertsql);
-        String sqlitePath = "jdbc:sqlite:" + dbName;
-        Connection conn = null;
-        try
-        {
-            conn = DriverManager.getConnection(sqlitePath);
-            Statement query = conn.createStatement();
-            query.execute(deletesql);
-            query.execute(createsql);
-            query.execute(insertsql);
-            conn.close();
-        }
-        catch (SQLException e) 
-        {
-            System.out.println(e.getMessage());
+            temp.append(");");
+            InsertTable.append(temp);
+            String SQLInsertTable = InsertTable.toString();
+            RunQuery(DBName,SQLInsertTable);
         }
     }
 }

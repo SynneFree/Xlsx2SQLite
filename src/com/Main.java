@@ -9,78 +9,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
-public class xlsx2sqlite {
-
-    // Check is String = Number ?
-    private static boolean isNum(String string) 
-    {
-        if ((string.charAt(0) > '9' || string.charAt(0) < '0')
-                && string.charAt(0) != '-' && string.charAt(0) != '+')
-            return false;
-        for (int i = 1; i < string.length(); i++)
-            if ((string.charAt(i) > '9' || string.charAt(i) < '0') && string.charAt(i) != '.')
-                return false;
-        return true;
-    }
-
-    // Check is String = Integer ?
-    private static boolean isInt(String string) 
-    {
-        if (!isNum(string)) return false;
-        int pos = -1;
-        for (int i = 0; i < string.length(); i++) 
-        {
-            if (string.charAt(i) == '.') 
-            {
-                pos = i;
-                break;
-            }
-        }
-
-        if (pos != -1) 
-        {
-            string = string.substring(pos + 1);
-            for (int i = 0; i < string.length(); i++) 
-            {
-                if (string.charAt(i) != '0')
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    // Delete .xlsx
-    private static String NetFileName(String string) 
-    {
-        if (string.endsWith(".xlsx"))
-            return string.replace(".xlsx", "");
-        else
-            return string;
-    }
-
-    private static void usageErr() 
-    {
-        System.err.println("Insert java -jar xlsx2sqlite.jar </path/to/file.db> </path/to/file.xlsx> <optional : xlsx/page/name> <optional : db/table/name>");
-        System.exit(-1);
-    }
-
-    private static void nameErr() 
-    {
-        System.err.println("File has to be .xlsx file");
-        System.exit(-1);
-    }
-
-    private static void sheetnameErr() 
-    {
-        System.err.println("SheetName is Invalid");
-        System.exit(-1);
-    }
-
+public class Main {
     public static void main(String[] args) throws IOException
     {
+    	Check chk = new Check();
         //Parameters Check
-        if (args.length < 2) usageErr();
-        if (!args[1].endsWith(".xlsx"))nameErr();
+        if (args.length < 2) chk.usageErr();
+        if (!args[1].endsWith(".xlsx"))chk.nameErr();
 
         //Declarations
         DBEdit dbedit = new DBEdit();
@@ -91,7 +26,7 @@ public class xlsx2sqlite {
         ArrayList<ArrayList<String>> ContentOfXlsx = new ArrayList<>();
 
         //When has at least three parameters, get SheetName
-        if (args.length > 2 || args.length <= 4) SheetName = args[2];
+        if (args.length == 3 || args.length == 4) SheetName = args[2];
         //If there is only two parameters, get first sheet
         else SheetName = null;
 
@@ -100,8 +35,8 @@ public class xlsx2sqlite {
         //If has 4th parameter, then get TableName
         else if (args.length == 4) TableName = args[3];
          //When there is only two parameters, TableName is FileName
-        else TableName = NetFileName(FileName);
-            
+        else TableName = chk.NetFileName(FileName);
+        System.out.println(FileName);
         //Declare File and open xlsx file
         File OpenFile = new File(FileName);
         FileInputStream FileInput = new FileInputStream(OpenFile);
@@ -114,7 +49,7 @@ public class xlsx2sqlite {
         //Get Default page
         else Sheet = WorkBook.getSheetAt(0);
         //Sheet with Name provided is not found
-        if (Sheet == null) sheetnameErr();
+        if (Sheet == null) chk.sheetnameErr();
         
         //Get Every Row of the sheet
         for (Row row : Sheet) 
@@ -147,9 +82,9 @@ public class xlsx2sqlite {
                 String string = strings.get(j);
                 if (string.equals("")) continue;
                 // Integer entry
-                else if (isInt(string)) continue;
+                else if (chk.isInt(string)) continue;
                 // Real entry
-                else if (isNum(string)) 
+                else if (chk.isNum(string)) 
                 {
                     if (ColumnType.equals("int")) ColumnType = "real";
                     continue;
@@ -160,9 +95,10 @@ public class xlsx2sqlite {
             TypeOfData.add(ColumnType);
         }
         // Insert xlsx file into table
+        dbedit.createTable(ContentOfXlsx, TypeOfData, DBName, TableName);
         dbedit.insertTable(ContentOfXlsx, TypeOfData, DBName, TableName);
         // Print out
-        dbedit.showTable(ContentOfXlsx, TypeOfData, TableName);
+        dbedit.showSchema(ContentOfXlsx, TypeOfData, TableName);
         // Close files
         WorkBook.close();
         FileInput.close();
