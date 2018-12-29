@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/poi-4.0.1.jar"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/poi-ooxml-4.0.1.jar"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/xmlbeans-3.0.2.jar"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/commons-collections4-4.2.jar"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/commons-compress-1.18.jar"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/poi-ooxml-schemas-4.0.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/veronicatjan/eclipse-workspace/XLS2SQLITE/lib/sqlite-jdbc-3.23.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
